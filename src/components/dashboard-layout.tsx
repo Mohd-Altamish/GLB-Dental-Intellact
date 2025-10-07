@@ -27,7 +27,7 @@ export function DashboardLayout({ navItems, children, role }: DashboardLayoutPro
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
             <Link href="/" className="flex items-center gap-2 font-semibold font-headline">
               <Logo className="h-8 w-8 text-primary" />
-              <span className="">Dental Intellect</span>
+              <span className="">GLB Dental Intellect</span>
             </Link>
           </div>
           <div className="flex-1">
@@ -57,7 +57,7 @@ export function DashboardLayout({ navItems, children, role }: DashboardLayoutPro
                   className="flex items-center gap-2 text-lg font-semibold mb-4"
                 >
                   <Logo className="h-8 w-8 text-primary" />
-                  <span className="sr-only">Dental Intellect</span>
+                  <span className="sr-only">GLB Dental Intellect</span>
                 </Link>
                 {navItems}
               </nav>

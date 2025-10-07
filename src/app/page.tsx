@@ -8,7 +8,7 @@ export default function LoginPage() {
         <div className="mb-8 flex flex-col items-center">
           <Logo className="h-16 w-16 text-primary" />
           <h1 className="mt-4 text-3xl font-bold text-center font-headline text-foreground">
-            Dental Intellect
+            GLB Dental Intellect
           </h1>
           <p className="mt-2 text-center text-muted-foreground">
             AI-Powered Dental Health Assessment

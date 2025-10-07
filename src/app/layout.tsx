@@ -4,7 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
-  title: 'Dental Intellect',
+  title: 'GLB Dental Intellect',
   description: 'AI-Powered Dental Health Assessment',
 };
 
@@ -24,7 +24,6 @@ export default function RootLayout({
         className={cn(
           'min-h-screen bg-background font-body antialiased',
         )}
-        suppressHydrationWarning={true}
       >
         {children}
         <Toaster />
