@@ -7,18 +7,32 @@ type LogoProps = {
 export function Logo({ className }: LogoProps) {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={cn('h-6 w-6', className)}
-    >
-      <path d="M7 21V15C7 13.3431 8.34315 12 10 12H14C15.6569 12 17 13.3431 17 15V21" />
-      <path d="M6 12C6 8.68629 8.68629 6 12 6C15.3137 6 18 8.68629 18 12" />
-      <path d="M12 6C10.5 6 9.5 3 12 3C14.5 3 13.5 6 12 6Z" />
+        viewBox="0 0 100 100"
+        xmlns="http://www.w3.org/2000/svg"
+        className={cn('h-6 w-6', className)}
+        >
+        <g fill="currentColor">
+            <path
+            d="M50,2.5A47.5,47.5 0 0 0 2.5,50V80A10,10 0 0 0 12.5,90H87.5A10,10 0 0 0 97.5,80V50A47.5,47.5 0 0 0 50,2.5"
+            fill="#8B4513"
+            />
+            <path
+            d="M50,10A40,40 0 0 0 10,50V75A5,5 0 0 0 15,80H85A5,5 0 0 0 90,75V50A40,40 0 0 0 50,10"
+            fill="goldenrod"
+            />
+            <circle cx="50" cy="50" r="30" fill="#8B4513" />
+            <text
+            x="50"
+            y="62"
+            fontFamily="serif"
+            fontSize="30"
+            fill="goldenrod"
+            textAnchor="middle"
+            fontWeight="bold"
+            >
+            GLB
+            </text>
+        </g>
     </svg>
   );
 }
