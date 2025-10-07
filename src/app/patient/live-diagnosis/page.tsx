@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Bot, Image as ImageIcon, Loader2, Send, Upload, User, X, Camera, CircleDot } from 'lucide-react';
+import { Bot, Image as ImageIcon, Loader2, Send, Upload, User, X, Camera, CircleDot, Video } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { liveDentalDiagnosis } from '@/ai/flows/live-dental-diagnosis';
@@ -41,6 +41,8 @@ export default function LiveDiagnosisPage() {
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isVideoChatOpen, setIsVideoChatOpen] = useState(false);
+
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,6 +152,29 @@ export default function LiveDiagnosisPage() {
     }
   };
 
+  const handleOpenVideoChat = async () => {
+    setIsVideoChatOpen(true);
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+        setHasCameraPermission(true);
+      } catch (error) {
+        console.error("Error accessing media devices:", error);
+        setHasCameraPermission(false);
+        toast({
+            variant: "destructive",
+            title: "Media Access Denied",
+            description: "Please enable camera and microphone permissions in your browser settings."
+        });
+        setIsVideoChatOpen(false);
+      }
+    }
+  };
+
+
   useEffect(() => {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTo({
@@ -167,11 +192,17 @@ export default function LiveDiagnosisPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight font-headline">Live AI Diagnosis</h2>
-        <p className="text-muted-foreground">
-          Chat with our AI assistant for instant dental analysis and advice.
-        </p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight font-headline">Live AI Diagnosis</h2>
+          <p className="text-muted-foreground">
+            Chat with our AI assistant for instant dental analysis and advice.
+          </p>
+        </div>
+        <Button onClick={handleOpenVideoChat}>
+            <Video className="mr-2 h-4 w-4" />
+            Start Live Video Chat
+        </Button>
       </div>
       <Card className="flex flex-col h-[70vh]">
         <CardHeader>
@@ -321,6 +352,37 @@ export default function LiveDiagnosisPage() {
                   <Button onClick={handleCaptureImage} disabled={hasCameraPermission !== true}>
                     <CircleDot className="mr-2 h-4 w-4" />
                     Capture Image
+                  </Button>
+              </DialogFooter>
+          </DialogContent>
+      </Dialog>
+       <Dialog open={isVideoChatOpen} onOpenChange={(open) => {
+          if(!open) {
+              stopCameraStream();
+              setIsVideoChatOpen(false);
+          }
+      }}>
+          <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+              <DialogHeader>
+                  <DialogTitle>Live Video Consultation</DialogTitle>
+                  <DialogDescription>You are now talking to the AI Dental Assistant.</DialogDescription>
+              </DialogHeader>
+              <div className="grid grid-cols-2 gap-4 flex-grow">
+                <div className="relative bg-muted rounded-md overflow-hidden">
+                    <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted />
+                    <div className="absolute bottom-2 left-2 bg-black/50 text-white text-sm px-2 py-1 rounded">You</div>
+                </div>
+                <div className="bg-muted rounded-md flex items-center justify-center">
+                    <div className="text-center">
+                        <Bot className="h-16 w-16 mx-auto text-muted-foreground" />
+                        <p className="text-muted-foreground mt-2">Waiting for AI Assistant...</p>
+                    </div>
+                </div>
+              </div>
+              <DialogFooter>
+                  <Button variant="outline" onClick={() => { stopCameraStream(); setIsVideoChatOpen(false); }}>End Call</Button>
+                  <Button disabled>
+                    Start Conversation
                   </Button>
               </DialogFooter>
           </DialogContent>
