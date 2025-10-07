@@ -328,6 +328,7 @@ export default function LiveDiagnosisPage() {
                         <SelectItem value="fr">French</SelectItem>
                         <SelectItem value="de">German</SelectItem>
                         <SelectItem value="ja">Japanese</SelectItem>
+                        <SelectItem value="hi">Hindi</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
