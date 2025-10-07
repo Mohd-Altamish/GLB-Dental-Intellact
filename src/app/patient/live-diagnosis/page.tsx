@@ -1,0 +1,226 @@
+'use client';
+
+import { useState, useRef, useEffect, ChangeEvent } from 'react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Bot, Image as ImageIcon, Loader2, Send, Upload, User, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
+import { liveDentalDiagnosis } from '@/ai/flows/live-dental-diagnosis';
+import Image from 'next/image';
+
+interface Message {
+  role: 'user' | 'model';
+  text: string;
+  imagePreview?: string;
+}
+
+export default function LiveDiagnosisPage() {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() && !imagePreview) return;
+
+    const userMessage: Message = { role: 'user', text: input };
+    if (imagePreview) {
+      userMessage.imagePreview = imagePreview;
+    }
+    
+    setMessages((prev) => [...prev, userMessage]);
+    setIsLoading(true);
+    setInput('');
+    setImagePreview(null);
+    if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+    }
+
+    try {
+      const result = await liveDentalDiagnosis({
+        question: input,
+        photoDataUri: imagePreview || undefined,
+      });
+      setMessages((prev) => [...prev, { role: 'model', text: result.answer }]);
+    } catch (error) {
+      console.error('Diagnosis failed:', error);
+      toast({
+        variant: 'destructive',
+        title: 'An Error Occurred',
+        description: 'The AI assistant could not respond. Please try again.',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  useEffect(() => {
+    if (scrollAreaRef.current) {
+      scrollAreaRef.current.scrollTo({
+        top: scrollAreaRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  }, [messages]);
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold tracking-tight font-headline">Live AI Diagnosis</h2>
+        <p className="text-muted-foreground">
+          Chat with our AI assistant for instant dental analysis and advice.
+        </p>
+      </div>
+      <Card className="flex flex-col h-[70vh]">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Bot className="text-primary" />
+            AI Dental Assistant
+          </CardTitle>
+          <CardDescription>
+            You can ask questions or upload an image for analysis.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex-grow overflow-hidden">
+          <ScrollArea className="h-full" ref={scrollAreaRef}>
+            <div className="space-y-4 pr-4">
+              {messages.length === 0 && (
+                <div className="text-center text-muted-foreground py-10">
+                  <p>Start the conversation by sending a message or uploading an image.</p>
+                </div>
+              )}
+              {messages.map((msg, index) => (
+                <div
+                  key={index}
+                  className={cn('flex items-start gap-3', {
+                    'justify-end': msg.role === 'user',
+                  })}
+                >
+                  {msg.role === 'model' && (
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback><Bot /></AvatarFallback>
+                    </Avatar>
+                  )}
+                  <div
+                    className={cn(
+                      'max-w-md rounded-lg px-4 py-3',
+                      msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                    )}
+                  >
+                    {msg.imagePreview && (
+                      <Image
+                        src={msg.imagePreview}
+                        alt="Uploaded for analysis"
+                        width={200}
+                        height={150}
+                        className="rounded-md mb-2"
+                      />
+                    )}
+                    <p className="text-sm">{msg.text}</p>
+                  </div>
+                  {msg.role === 'user' && (
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback><User /></AvatarFallback>
+                    </Avatar>
+                  )}
+                </div>
+              ))}
+               {isLoading && (
+                  <div className="flex items-start gap-3">
+                      <Avatar className="h-8 w-8">
+                          <AvatarFallback><Bot /></AvatarFallback>
+                      </Avatar>
+                      <div className="bg-muted rounded-lg px-4 py-3">
+                          <Loader2 className="animate-spin" />
+                      </div>
+                  </div>
+               )}
+            </div>
+          </ScrollArea>
+        </CardContent>
+        <CardFooter className="pt-6 border-t">
+          <form onSubmit={handleSendMessage} className="flex w-full items-start space-x-2">
+             <div className="relative">
+                {imagePreview && (
+                  <div className="relative group">
+                    <Image
+                      src={imagePreview}
+                      alt="Preview"
+                      width={48}
+                      height={48}
+                      className="rounded-md object-cover h-10 w-12"
+                    />
+                     <Button
+                        variant="destructive"
+                        size="icon"
+                        className="absolute -top-2 -right-2 h-5 w-5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={handleRemoveImage}
+                        type="button"
+                    >
+                        <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                )}
+                 {!imagePreview && (
+                    <Button type="button" variant="outline" size="icon" onClick={() => fileInputRef.current?.click()}>
+                        <Upload />
+                        <span className="sr-only">Upload Image</span>
+                    </Button>
+                 )}
+                <Input
+                    id="picture-chat"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                />
+            </div>
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Ask a question or describe your symptom..."
+              disabled={isLoading}
+            />
+            <Button type="submit" size="icon" disabled={isLoading || (!input.trim() && !imagePreview)}>
+              <Send />
+            </Button>
+          </form>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+}

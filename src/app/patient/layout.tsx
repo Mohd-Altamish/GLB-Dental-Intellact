@@ -1,6 +1,6 @@
 import { DashboardLayout } from '@/components/dashboard-layout';
 import { DashboardNavItem } from '@/components/dashboard-nav-item';
-import { Home, Calendar, BookOpen } from 'lucide-react';
+import { Home, Calendar, BookOpen, Bot } from 'lucide-react';
 
 export default function PatientDashboardLayout({
   children,
@@ -12,6 +12,10 @@ export default function PatientDashboardLayout({
       <DashboardNavItem href="/patient">
         <Home className="h-4 w-4" />
         Dashboard
+      </DashboardNavItem>
+      <DashboardNavItem href="/patient/live-diagnosis">
+        <Bot className="h-4 w-4" />
+        Live Diagnosis
       </DashboardNavItem>
       <DashboardNavItem href="/patient/appointments">
         <Calendar className="h-4 w-4" />
