@@ -105,16 +105,16 @@ export function ImageAnalysis() {
           <div className="relative">
             {!imagePreview && (
               <div
-                className="flex h-48 w-full cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed bg-muted/50 hover:bg-muted transition-colors"
+                className="flex h-48 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed bg-muted/50 hover:bg-muted transition-colors"
                 onClick={() => fileInputRef.current?.click()}
               >
-                <div className="absolute pointer-events-none opacity-20">
+                <div className="absolute pointer-events-none opacity-10">
                   <svg viewBox="0 0 100 60" className="w-48 h-auto text-foreground">
                       <path d="M 10,30 C 20,55 80,55 90,30" stroke="currentColor" fill="none" strokeWidth="3" strokeLinecap="round"/>
                       <path d="M 10,30 C 20,5 80,5 90,30" stroke="currentColor" fill="none" strokeWidth="3" strokeLinecap="round"/>
                   </svg>
                 </div>
-                <div className="text-center z-10">
+                <div className="text-center z-10 p-4">
                   <Upload className="h-8 w-8 text-muted-foreground mx-auto" />
                   <p className="mt-2 text-sm text-muted-foreground">
                     Click to upload or drag and drop
@@ -140,7 +140,7 @@ export function ImageAnalysis() {
                   alt="Teeth preview"
                   width={600}
                   height={400}
-                  className="rounded-md object-cover aspect-video w-full"
+                  className="rounded-lg object-cover aspect-video w-full"
                 />
                 <Button
                   variant="destructive"
