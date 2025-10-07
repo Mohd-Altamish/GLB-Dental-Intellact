@@ -13,10 +13,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Bot, Image as ImageIcon, Loader2, Send, Upload, User, X, Camera, CircleDot, Video } from 'lucide-react';
+import { Bot, Image as ImageIcon, Loader2, Send, Upload, User, X, Camera, CircleDot, Video, Mic, Square } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { liveDentalDiagnosis } from '@/ai/flows/live-dental-diagnosis';
+import { liveDentalTts } from '@/ai/flows/live-dental-tts';
 import Image from 'next/image';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
@@ -42,6 +43,12 @@ export default function LiveDiagnosisPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isVideoChatOpen, setIsVideoChatOpen] = useState(false);
+  
+  const [isRecording, setIsRecording] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -174,6 +181,71 @@ export default function LiveDiagnosisPage() {
     }
   };
 
+  const handleToggleRecording = () => {
+    if (isRecording) {
+      mediaRecorderRef.current?.stop();
+    } else {
+      startRecording();
+    }
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      audioChunksRef.current = [];
+
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        audioChunksRef.current.push(event.data);
+      };
+
+      mediaRecorderRef.current.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        // This is a simplified flow. A real implementation would need STT.
+        // For this demo, we'll use a canned question and generate TTS from it.
+        const cannedQuestion = "I have a toothache, what should I do?";
+        setIsLoading(true);
+        try {
+            const diagnosis = await liveDentalDiagnosis({ question: cannedQuestion });
+            const ttsResult = await liveDentalTts(diagnosis.answer);
+            
+            const audioData = ttsResult.media;
+            const audio = new Audio(audioData);
+            audioRef.current = audio;
+            
+            audio.onplaying = () => setIsSpeaking(true);
+            audio.onended = () => setIsSpeaking(false);
+            
+            audio.play();
+
+        } catch(e) {
+            console.error(e);
+             toast({
+                variant: 'destructive',
+                title: 'An Error Occurred',
+                description: 'Could not get AI response. Please try again.',
+            });
+        } finally {
+            setIsLoading(false);
+        }
+
+        setIsRecording(false);
+         // Stop the microphone stream
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorderRef.current.start();
+      setIsRecording(true);
+    } catch (error) {
+      console.error('Error starting recording:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Recording Error',
+        description: 'Could not start audio recording. Please check microphone permissions.',
+      });
+    }
+  };
+
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -187,6 +259,7 @@ export default function LiveDiagnosisPage() {
   useEffect(() => {
       return () => {
           stopCameraStream();
+          mediaRecorderRef.current?.stream.getTracks().forEach(track => track.stop());
       }
   }, []);
 
@@ -372,17 +445,25 @@ export default function LiveDiagnosisPage() {
                     <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted />
                     <div className="absolute bottom-2 left-2 bg-black/50 text-white text-sm px-2 py-1 rounded">You</div>
                 </div>
-                <div className="bg-muted rounded-md flex items-center justify-center">
+                <div className="bg-muted rounded-md flex items-center justify-center relative overflow-hidden">
                     <div className="text-center">
-                        <Bot className="h-16 w-16 mx-auto text-muted-foreground" />
-                        <p className="text-muted-foreground mt-2">Waiting for AI Assistant...</p>
+                        <Bot className={cn("h-16 w-16 mx-auto text-muted-foreground transition-all", isSpeaking && "text-primary scale-110")} />
+                        <p className="text-muted-foreground mt-2">
+                           {isRecording ? "Listening..." : (isLoading ? "Thinking..." : (isSpeaking ? "Speaking..." : "Waiting for AI Assistant..."))}
+                        </p>
                     </div>
+                     {isSpeaking && (
+                      <div className="absolute bottom-4 left-4 right-4 h-2 bg-primary/20 rounded-full overflow-hidden">
+                        <div className="h-full bg-primary animate-pulse"></div>
+                      </div>
+                    )}
                 </div>
               </div>
               <DialogFooter>
                   <Button variant="outline" onClick={() => { stopCameraStream(); setIsVideoChatOpen(false); }}>End Call</Button>
-                  <Button disabled>
-                    Start Conversation
+                  <Button onClick={handleToggleRecording} disabled={isLoading || isSpeaking} className={cn(isRecording && "bg-destructive hover:bg-destructive/90")}>
+                    {isRecording ? <Square className="mr-2" /> : <Mic className="mr-2" />}
+                    {isRecording ? 'Stop Conversation' : 'Start Conversation'}
                   </Button>
               </DialogFooter>
           </DialogContent>
