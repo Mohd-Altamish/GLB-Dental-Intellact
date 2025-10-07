@@ -41,7 +41,7 @@ const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3
 
 export function AnalyticsDashboard() {
   return (
-    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 md:gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Patients</CardTitle>
@@ -73,7 +73,7 @@ export function AnalyticsDashboard() {
             </CardContent>
         </Card>
         
-        <Card className="lg:col-span-2">
+        <Card className="sm:col-span-2 lg:col-span-2">
             <CardHeader>
                 <CardTitle>Platform Activity</CardTitle>
                 <CardDescription>Users and reports over the last 6 months.</CardDescription>
@@ -92,7 +92,7 @@ export function AnalyticsDashboard() {
             </CardContent>
         </Card>
         
-        <Card>
+        <Card className="sm:col-span-2 lg:col-span-1">
             <CardHeader>
                 <CardTitle>Disease Distribution</CardTitle>
                 <CardDescription>A breakdown of all diagnoses.</CardDescription>
