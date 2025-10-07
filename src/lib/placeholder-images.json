@@ -1,3 +1,52 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "patient-avatar",
+      "description": "Patient avatar",
+      "imageUrl": "https://images.unsplash.com/photo-1484863137850-59afcfe05386?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxwZXJzb24lMjBzbWlsaW5nfGVufDB8fHx8MTc1OTc3OTYxOXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person smiling"
+    },
+    {
+      "id": "dentist-avatar",
+      "description": "Dentist avatar",
+      "imageUrl": "https://images.unsplash.com/photo-1612943705904-e2e101abcd19?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxkb2N0b3IlMjBwcm9mZXNzaW9uYWx8ZW58MHx8fHwxNzU5NzYwNDA1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "doctor professional"
+    },
+    {
+      "id": "admin-avatar",
+      "description": "Admin avatar",
+      "imageUrl": "https://picsum.photos/seed/admin1/100/100",
+      "imageHint": "person suit"
+    },
+    {
+      "id": "cavity-image",
+      "description": "Example of a tooth with a cavity",
+      "imageUrl": "https://picsum.photos/seed/cavity1/600/400",
+      "imageHint": "tooth decay"
+    },
+    {
+      "id": "gingivitis-image",
+      "description": "Example of gingivitis",
+      "imageUrl": "https://picsum.photos/seed/gingivitis1/600/400",
+      "imageHint": "gum inflammation"
+    },
+    {
+      "id": "healthy-teeth-image",
+      "description": "Example of healthy teeth",
+      "imageUrl": "https://picsum.photos/seed/healthy1/600/400",
+      "imageHint": "healthy smile"
+    },
+    {
+      "id": "plaque-image",
+      "description": "Example of plaque on teeth",
+      "imageUrl": "https://picsum.photos/seed/plaque1/600/400",
+      "imageHint": "dental plaque"
+    },
+    {
+      "id": "abscess-image",
+      "description": "Example of a dental abscess",
+      "imageUrl": "https://picsum.photos/seed/abscess1/600/400",
+      "imageHint": "dental abscess"
+    }
+  ]
 }
