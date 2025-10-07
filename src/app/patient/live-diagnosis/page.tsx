@@ -226,7 +226,13 @@ export default function LiveDiagnosisPage() {
             const { text: transcribedText } = await liveDentalStt({ audioDataUri });
 
             if(transcribedText) {
+                setMessages((prev) => [...prev, { role: 'user', text: transcribedText }]);
                 const diagnosis = await liveDentalDiagnosis({ question: transcribedText });
+                
+                // For text based chat from voice
+                setMessages((prev) => [...prev, { role: 'model', text: diagnosis.answer }]);
+
+                // For voice response in video chat
                 const ttsResult = await liveDentalTts(diagnosis.answer);
                 
                 const audioData = ttsResult.media;
@@ -424,6 +430,10 @@ export default function LiveDiagnosisPage() {
                             <Camera />
                             <span className="sr-only">Open Camera</span>
                         </Button>
+                        <Button type="button" variant="outline" size="icon" onClick={handleToggleRecording} className={cn(isRecording && "bg-destructive hover:bg-destructive/90 text-white")}>
+                            <Mic />
+                            <span className="sr-only">Record Audio</span>
+                        </Button>
                     </div>
                  )}
                 <Input
@@ -439,9 +449,9 @@ export default function LiveDiagnosisPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask a question or describe your symptom..."
-              disabled={isLoading}
+              disabled={isLoading || isRecording}
             />
-            <Button type="submit" size="icon" disabled={isLoading || (!input.trim() && !imagePreview)}>
+            <Button type="submit" size="icon" disabled={isLoading || isRecording || (!input.trim() && !imagePreview)}>
               <Send />
             </Button>
           </form>
