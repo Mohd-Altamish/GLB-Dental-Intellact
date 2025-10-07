@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { liveDentalDiagnosis } from '@/ai/flows/live-dental-diagnosis';
 import { liveDentalTts } from '@/ai/flows/live-dental-tts';
+import { liveDentalStt } from '@/ai/flows/live-dental-stt';
 import Image from 'next/image';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
@@ -189,6 +190,15 @@ export default function LiveDiagnosisPage() {
     }
   };
 
+  const blobToDataUri = (blob: Blob): Promise<string> => {
+      return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+      });
+  }
+
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -201,22 +211,31 @@ export default function LiveDiagnosisPage() {
 
       mediaRecorderRef.current.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        // This is a simplified flow. A real implementation would need STT.
-        // For this demo, we'll use a canned question and generate TTS from it.
-        const cannedQuestion = "I have a toothache, what should I do?";
+        
         setIsLoading(true);
         try {
-            const diagnosis = await liveDentalDiagnosis({ question: cannedQuestion });
-            const ttsResult = await liveDentalTts(diagnosis.answer);
-            
-            const audioData = ttsResult.media;
-            const audio = new Audio(audioData);
-            audioRef.current = audio;
-            
-            audio.onplaying = () => setIsSpeaking(true);
-            audio.onended = () => setIsSpeaking(false);
-            
-            audio.play();
+            const audioDataUri = await blobToDataUri(audioBlob);
+            const { text: transcribedText } = await liveDentalStt({ audioDataUri });
+
+            if(transcribedText) {
+                const diagnosis = await liveDentalDiagnosis({ question: transcribedText });
+                const ttsResult = await liveDentalTts(diagnosis.answer);
+                
+                const audioData = ttsResult.media;
+                const audio = new Audio(audioData);
+                audioRef.current = audio;
+                
+                audio.onplaying = () => setIsSpeaking(true);
+                audio.onended = () => setIsSpeaking(false);
+                
+                audio.play();
+            } else {
+                 toast({
+                    variant: 'destructive',
+                    title: 'Speech not detected',
+                    description: 'Could not understand audio. Please try again.',
+                });
+            }
 
         } catch(e) {
             console.error(e);
@@ -259,7 +278,7 @@ export default function LiveDiagnosisPage() {
   useEffect(() => {
       return () => {
           stopCameraStream();
-          mediaRecorderRef.current?.stream.getTracks().forEach(track => track.stop());
+          mediaRecorderRef.current?.stream?.getTracks().forEach(track => track.stop());
       }
   }, []);
 
