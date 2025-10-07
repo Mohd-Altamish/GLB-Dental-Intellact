@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import {
   Accordion,
   AccordionContent,
@@ -5,49 +8,95 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { patientHealthGuide } from '@/ai/flows/patient-health-guide';
+import { Skeleton } from '@/components/ui/skeleton';
+import { AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
+type GuideContent = {
+  [key: string]: string | null;
+};
 
 export default function HealthGuidesPage() {
+  const [activeItem, setActiveItem] = useState<string | null>(null);
+  const [guideContent, setGuideContent] = useState<GuideContent>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const topics = [
+    { value: 'brushing-technique', title: 'Proper Brushing Technique' },
+    { value: 'flossing-importance', title: 'The Importance of Flossing' },
+    { value: 'healthy-diet', title: 'Diet for Healthy Teeth' },
+    { value: 'gum-disease', title: 'Understanding Gum Disease' },
+    { value: 'cavity-prevention', title: 'How to Prevent Cavities' },
+    { value: 'sensitive-teeth', title: 'Managing Sensitive Teeth' },
+  ];
+
+  const handleAccordionChange = async (value: string) => {
+    setActiveItem(value);
+    if (!value || guideContent[value]) {
+      // Collapse or already loaded
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    try {
+      const result = await patientHealthGuide({ topic: topics.find(t => t.value === value)?.title || '' });
+      setGuideContent(prev => ({ ...prev, [value]: result.guide }));
+    } catch (e) {
+      console.error('Failed to generate health guide:', e);
+      setError('Could not load the guide at this time. Please try again later.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold tracking-tight font-headline">Dental Health Guides</h2>
         <p className="text-muted-foreground">
-          Information and tips for maintaining excellent oral hygiene.
+          Personalized information and tips for maintaining excellent oral hygiene.
         </p>
       </div>
 
       <Card>
         <CardHeader>
-            <CardTitle>Hygiene Library</CardTitle>
-            <CardDescription>Click on a topic to learn more.</CardDescription>
+          <CardTitle>Hygiene Library</CardTitle>
+          <CardDescription>Select a topic to get AI-powered advice.</CardDescription>
         </CardHeader>
         <CardContent>
-            <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="item-1">
-                <AccordionTrigger>Proper Brushing Technique</AccordionTrigger>
+          <Accordion type="single" collapsible className="w-full" onValueChange={handleAccordionChange} value={activeItem || ''}>
+            {topics.map(topic => (
+              <AccordionItem value={topic.value} key={topic.value}>
+                <AccordionTrigger>{topic.title}</AccordionTrigger>
                 <AccordionContent>
-                Use a soft-bristled brush and fluoride toothpaste. Angle the brush at 45 degrees to the gumline. Use gentle, short strokes. Brush for at least two minutes, twice a day. Don't forget to brush your tongue to remove bacteria.
+                  {isLoading && activeItem === topic.value && (
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-3/4" />
+                    </div>
+                  )}
+                  {error && activeItem === topic.value && (
+                     <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Error</AlertTitle>
+                        <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
+                  {guideContent[topic.value] && (
+                    <div className="prose prose-sm max-w-none dark:prose-invert">
+                        {guideContent[topic.value]?.split('\n').map((paragraph, index) => (
+                            <p key={index}>{paragraph}</p>
+                        ))}
+                    </div>
+                  )}
                 </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="item-2">
-                <AccordionTrigger>The Importance of Flossing</AccordionTrigger>
-                <AccordionContent>
-                Flossing removes plaque and food particles from between your teeth and under the gumline, areas your toothbrush can't reach. Aim to floss at least once a day to prevent cavities and gum disease.
-                </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="item-3">
-                <AccordionTrigger>Diet for Healthy Teeth</AccordionTrigger>
-                <AccordionContent>
-                Limit sugary foods and drinks, as sugar feeds the bacteria that cause tooth decay. Eat a balanced diet rich in fruits, vegetables, and calcium-rich foods like milk and cheese. Drink plenty of water to help rinse away food particles.
-                </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="item-4">
-                <AccordionTrigger>Understanding Gum Disease</AccordionTrigger>
-                <AccordionContent>
-                Gum disease, or gingivitis, is inflammation of the gums. Symptoms include red, swollen, and bleeding gums. It's often caused by plaque buildup and can be reversed with good oral hygiene and professional cleanings. If left untreated, it can progress to more serious periodontitis.
-                </AccordionContent>
-            </AccordionItem>
-            </Accordion>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </CardContent>
       </Card>
     </div>
