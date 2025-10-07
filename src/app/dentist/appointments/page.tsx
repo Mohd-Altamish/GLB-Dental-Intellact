@@ -103,7 +103,7 @@ export default function DentistAppointmentsPage() {
                         <DropdownMenuItem onClick={() => handleStatusChange(appt.id, 'Confirmed')}>
                           Confirm
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleStatus.change(appt.id, 'Cancelled')}>
+                        <DropdownMenuItem onClick={() => handleStatusChange(appt.id, 'Cancelled')}>
                            Cancel
                         </DropdownMenuItem>
                       </DropdownMenuContent>
