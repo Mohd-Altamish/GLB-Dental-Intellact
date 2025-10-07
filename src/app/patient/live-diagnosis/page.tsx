@@ -22,6 +22,14 @@ import { liveDentalStt } from '@/ai/flows/live-dental-stt';
 import Image from 'next/image';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Label } from '@/components/ui/label';
 
 
 interface Message {
@@ -298,13 +306,32 @@ export default function LiveDiagnosisPage() {
       </div>
       <Card className="flex flex-col h-[70vh]">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bot className="text-primary" />
-            AI Dental Assistant
-          </CardTitle>
-          <CardDescription>
-            You can ask questions or upload an image for analysis.
-          </CardDescription>
+          <div className="flex justify-between items-start">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Bot className="text-primary" />
+                AI Dental Assistant
+              </CardTitle>
+              <CardDescription>
+                You can ask questions or upload an image for analysis.
+              </CardDescription>
+            </div>
+            <div className="w-48 space-y-2">
+                <Label htmlFor="language">Language</Label>
+                <Select defaultValue="en">
+                    <SelectTrigger id="language">
+                        <SelectValue placeholder="Select language" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="en">English</SelectItem>
+                        <SelectItem value="es">Spanish</SelectItem>
+                        <SelectItem value="fr">French</SelectItem>
+                        <SelectItem value="de">German</SelectItem>
+                        <SelectItem value="ja">Japanese</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="flex-grow overflow-hidden">
           <ScrollArea className="h-full" ref={scrollAreaRef}>
