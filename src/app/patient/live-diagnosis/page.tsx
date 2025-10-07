@@ -13,11 +13,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Bot, Image as ImageIcon, Loader2, Send, Upload, User, X } from 'lucide-react';
+import { Bot, Image as ImageIcon, Loader2, Send, Upload, User, X, Camera, CircleDot } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { liveDentalDiagnosis } from '@/ai/flows/live-dental-diagnosis';
 import Image from 'next/image';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+
 
 interface Message {
   role: 'user' | 'model';
@@ -33,6 +36,11 @@ export default function LiveDiagnosisPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,6 +94,61 @@ export default function LiveDiagnosisPage() {
       fileInputRef.current.value = '';
     }
   };
+  
+  const stopCameraStream = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach(track => track.stop());
+      videoRef.current.srcObject = null;
+    }
+  }
+
+  const handleOpenCamera = async () => {
+    setIsCameraOpen(true);
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+        setHasCameraPermission(true);
+      } catch (error) {
+        console.error("Error accessing camera:", error);
+        setHasCameraPermission(false);
+        toast({
+            variant: "destructive",
+            title: "Camera Access Denied",
+            description: "Please enable camera permissions in your browser settings."
+        });
+        setIsCameraOpen(false);
+      }
+    } else {
+        setHasCameraPermission(false);
+        toast({
+            variant: "destructive",
+            title: "Camera Not Supported",
+            description: "Your browser does not support camera access."
+        });
+        setIsCameraOpen(false);
+    }
+  };
+
+  const handleCaptureImage = () => {
+    if (videoRef.current && canvasRef.current) {
+        const video = videoRef.current;
+        const canvas = canvasRef.current;
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const context = canvas.getContext('2d');
+        if(context) {
+            context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+            const dataUrl = canvas.toDataURL('image/png');
+            setImagePreview(dataUrl);
+        }
+        stopCameraStream();
+        setIsCameraOpen(false);
+    }
+  };
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -95,6 +158,12 @@ export default function LiveDiagnosisPage() {
       });
     }
   }, [messages]);
+
+  useEffect(() => {
+      return () => {
+          stopCameraStream();
+      }
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -195,10 +264,16 @@ export default function LiveDiagnosisPage() {
                   </div>
                 )}
                  {!imagePreview && (
-                    <Button type="button" variant="outline" size="icon" onClick={() => fileInputRef.current?.click()}>
-                        <Upload />
-                        <span className="sr-only">Upload Image</span>
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button type="button" variant="outline" size="icon" onClick={() => fileInputRef.current?.click()}>
+                            <Upload />
+                            <span className="sr-only">Upload Image</span>
+                        </Button>
+                         <Button type="button" variant="outline" size="icon" onClick={handleOpenCamera}>
+                            <Camera />
+                            <span className="sr-only">Open Camera</span>
+                        </Button>
+                    </div>
                  )}
                 <Input
                     id="picture-chat"
@@ -221,6 +296,36 @@ export default function LiveDiagnosisPage() {
           </form>
         </CardFooter>
       </Card>
+      <Dialog open={isCameraOpen} onOpenChange={(open) => {
+          if(!open) {
+              stopCameraStream();
+              setIsCameraOpen(false);
+          }
+      }}>
+          <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                  <DialogTitle>Live Camera</DialogTitle>
+                  <DialogDescription>Position your teeth or gums in the frame and capture.</DialogDescription>
+              </DialogHeader>
+                <div className='relative'>
+                    <video ref={videoRef} className="w-full aspect-video rounded-md bg-muted" autoPlay muted />
+                    {hasCameraPermission === false && (
+                         <Alert variant="destructive" className="mt-4">
+                            <AlertTitle>Camera Access Required</AlertTitle>
+                            <AlertDescription>Please enable camera access in your browser to use this feature.</AlertDescription>
+                        </Alert>
+                    )}
+                </div>
+              <DialogFooter>
+                  <Button variant="outline" onClick={() => { stopCameraStream(); setIsCameraOpen(false); }}>Cancel</Button>
+                  <Button onClick={handleCaptureImage} disabled={hasCameraPermission !== true}>
+                    <CircleDot className="mr-2 h-4 w-4" />
+                    Capture Image
+                  </Button>
+              </DialogFooter>
+          </DialogContent>
+      </Dialog>
+      <canvas ref={canvasRef} className="hidden"></canvas>
     </div>
   );
 }
