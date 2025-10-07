@@ -34,6 +34,7 @@ body {
     --chart-5: 27 87% 67%;
     --radius: 0.75rem;
   }
+
   .dark {
     --background: 215 28% 17%;
     --foreground: 210 20% 96%;
