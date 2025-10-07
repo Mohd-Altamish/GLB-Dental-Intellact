@@ -11,33 +11,48 @@ export function Logo({ className }: LogoProps) {
         xmlns="http://www.w3.org/2000/svg"
         className={cn('h-6 w-6', className)}
         >
-        <g fill="currentColor">
-            {/* Shield shape */}
-            <path
-            d="M50,2.5A47.5,47.5 0 0 0 2.5,50V80A10,10 0 0 0 12.5,90H87.5A10,10 0 0 0 97.5,80V50A47.5,47.5 0 0 0 50,2.5"
-            className="text-amber-700"
-            fill="currentColor"
-            />
-            {/* Inner shield */}
-            <path
-            d="M50,10A40,40 0 0 0 10,50V75A5,5 0 0 0 15,80H85A5,5 0 0 0 90,75V50A40,40 0 0 0 50,10"
-            className="text-amber-400"
-            fill="currentColor"
-            />
-            {/* Inner circle */}
-            <circle cx="50" cy="50" r="30" className="text-amber-700" fill="currentColor" />
-            {/* Text */}
+        <g fill="none" strokeWidth="0">
+            {/* Ribbon */}
+            <path d="M 5 65 L 20 70 L 20 85 L 5 80 Z" fill="#DAA520" />
+            <path d="M 95 65 L 80 70 L 80 85 L 95 80 Z" fill="#DAA520" />
+            <path d="M 15 70 L 85 70 L 80 85 L 20 85 Z" fill="#800000" />
+            <path d="M 50 60 L 80 70 L 20 70 Z" fill="#B8860B" />
+
+             {/* Laurels */}
+            <g fill="#CD853F">
+                <path d="M 25,20 A 40 40 0 0 1 50,10" stroke="#CD853F" strokeWidth="3" />
+                <path d="M 75,20 A 40 40 0 0 0 50,10" stroke="#CD853F" strokeWidth="3" />
+                
+                <g transform="translate(28, 25) rotate(-30)">
+                    <ellipse cx="0" cy="0" rx="3" ry="1.5" />
+                    <ellipse cx="0" cy="5" rx="3" ry="1.5" />
+                    <ellipse cx="0" cy="10" rx="3" ry="1.5" />
+                    <ellipse cx="0" cy="15" rx="3" ry="1.5" />
+                </g>
+                 <g transform="translate(72, 25) rotate(30)">
+                    <ellipse cx="0" cy="0" rx="3" ry="1.5" />
+                    <ellipse cx="0" cy="5" rx="3" ry="1.5" />
+                    <ellipse cx="0" cy="10" rx="3" ry="1.5" />
+                    <ellipse cx="0" cy="15" rx="3" ry="1.5" />
+                </g>
+            </g>
+
+            {/* Main Shield */}
+            <path d="M 50 15 C 20 15, 15 40, 15 50 C 15 70, 30 80, 50 80 C 70 80, 85 70, 85 50 C 85 40, 80 15, 50 15 Z" fill="#DAA520" />
+            <circle cx="50" cy="50" r="28" fill="#5C4033" />
+            <circle cx="50" cy="50" r="25" stroke="#DAA520" strokeWidth="2" fill="none"/>
+
+            {/* GLB Monogram - Simplified */}
             <text
-            x="50"
-            y="62"
-            fontFamily="serif"
-            fontSize="30"
-            className="text-amber-400"
-            fill="currentColor"
-            textAnchor="middle"
-            fontWeight="bold"
+                x="50"
+                y="58"
+                fontFamily="serif"
+                fontSize="24"
+                fill="#DAA520"
+                textAnchor="middle"
+                fontWeight="bold"
             >
-            GLB
+                GLB
             </text>
         </g>
     </svg>
