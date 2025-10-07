@@ -256,7 +256,7 @@ export default function LiveDiagnosisPage() {
              toast({
                 variant: 'destructive',
                 title: 'An Error Occurred',
-                description: 'Could not get AI response. Please try again.',
+                description: 'The AI assistant could not get AI response. Please try again.',
             });
         } finally {
             setIsLoading(false);
